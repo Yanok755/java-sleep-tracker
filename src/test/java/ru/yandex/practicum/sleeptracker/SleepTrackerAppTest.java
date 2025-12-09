@@ -31,10 +31,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 6, 0),
-                              SleepQuality.GOOD), // 8 часов = 480 минут
+                              SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 3, 14, 30),
                               LocalDateTime.of(2025, 10, 3, 15, 20),
-                              SleepQuality.NORMAL) // 50 минут
+                              SleepQuality.NORMAL)
         );
         
         SleepTrackerApp.MinDurationFunction function = new SleepTrackerApp.MinDurationFunction();
@@ -48,10 +48,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 6, 0),
-                              SleepQuality.GOOD), // 8 часов = 480 минут
+                              SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 10, 0),
-                              SleepQuality.NORMAL) // 11 часов = 660 минут
+                              SleepQuality.NORMAL)
         );
         
         SleepTrackerApp.MaxDurationFunction function = new SleepTrackerApp.MaxDurationFunction();
@@ -65,10 +65,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 6, 0),
-                              SleepQuality.GOOD), // 8 часов = 480 минут
+                              SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 7, 0),
-                              SleepQuality.NORMAL) // 8 часов = 480 минут
+                              SleepQuality.NORMAL)
         );
         
         SleepTrackerApp.AverageDurationFunction function = new SleepTrackerApp.AverageDurationFunction();
@@ -100,19 +100,15 @@ class SleepTrackerAppTest {
     @Test
     void testSleeplessNightsFunction() {
         List<SleepingSession> sessions = Arrays.asList(
-            // Ночь с 1 на 2 октября - есть сон
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 15),
                               LocalDateTime.of(2025, 10, 2, 8, 0),
                               SleepQuality.GOOD),
-            // Ночь со 2 на 3 октября - есть сон
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 8, 0),
                               SleepQuality.NORMAL),
-            // Ночь с 3 на 4 октября - бессонная (только дневной сон)
             new SleepingSession(LocalDateTime.of(2025, 10, 3, 14, 30),
                               LocalDateTime.of(2025, 10, 3, 15, 20),
                               SleepQuality.NORMAL),
-            // Ночь с 4 на 5 октября - есть сон
             new SleepingSession(LocalDateTime.of(2025, 10, 4, 23, 30),
                               LocalDateTime.of(2025, 10, 5, 6, 20),
                               SleepQuality.BAD)
@@ -121,19 +117,15 @@ class SleepTrackerAppTest {
         SleepTrackerApp.SleeplessNightsFunction function = new SleepTrackerApp.SleeplessNightsFunction();
         SleepAnalysisResult<Long> result = function.apply(sessions);
         
-        // Должна быть 1 бессонная ночь (с 3 на 4 октября)
         assertEquals(1L, result.getValue());
     }
     
     @Test
     void testSleeplessNightsWithEdgeCases() {
-        // Тест с граничными случаями
         List<SleepingSession> sessions = Arrays.asList(
-            // Засыпание после полуночи
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 0, 30),
                               LocalDateTime.of(2025, 10, 1, 8, 0),
                               SleepQuality.GOOD),
-            // Просыпание до полуночи
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 23, 30),
                               SleepQuality.NORMAL)
@@ -148,7 +140,6 @@ class SleepTrackerAppTest {
     @Test
     void testChronotypeFunctionOwl() {
         List<SleepingSession> sessions = Arrays.asList(
-            // Сова: засыпание после 23:00, пробуждение после 9:00
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 23, 30),
                               LocalDateTime.of(2025, 10, 2, 9, 30),
                               SleepQuality.GOOD),
@@ -166,7 +157,6 @@ class SleepTrackerAppTest {
     @Test
     void testChronotypeFunctionLark() {
         List<SleepingSession> sessions = Arrays.asList(
-            // Жаворонок: засыпание до 22:00, пробуждение до 7:00
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 21, 30),
                               LocalDateTime.of(2025, 10, 2, 6, 30),
                               SleepQuality.GOOD),
@@ -184,7 +174,6 @@ class SleepTrackerAppTest {
     @Test
     void testChronotypeFunctionPigeon() {
         List<SleepingSession> sessions = Arrays.asList(
-            // Голубь: смешанные времена
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 30),
                               LocalDateTime.of(2025, 10, 2, 7, 30),
                               SleepQuality.GOOD),
