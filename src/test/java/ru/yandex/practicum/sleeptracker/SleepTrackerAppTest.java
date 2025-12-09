@@ -1,5 +1,7 @@
 package ru.yandex.practicum.sleeptracker;
 
+package ru.yandex.practicum.sleeptracker;
+
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.Arrays;
