@@ -42,35 +42,3 @@ public class SleepingSession {
             sleepStart, sleepEnd, getDurationInMinutes(), quality);
     }
 }
-
-// Класс-обёртка для результата анализа
-class SleepAnalysisResult<T> {
-    private String description;
-    private T value;
-
-    public SleepAnalysisResult(String description, T value) {
-        this.description = description;
-        this.value = value;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public T getValue() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s: %s", description, value.toString());
-    }
-}
-
-// Функциональный интерфейс для анализа сна
-interface SleepAnalysisFunction extends java.util.function.Function<java.util.List<SleepingSession>, SleepAnalysisResult<?>> {
-    // Базовый метод по умолчанию для удобства
-    default String getName() {
-        return this.getClass().getSimpleName();
-    }
-}
