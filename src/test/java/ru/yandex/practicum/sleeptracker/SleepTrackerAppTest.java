@@ -7,7 +7,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SleepTrackerAppTest {
-    
+
     @Test
     void testTotalSessionsFunction() {
         List<SleepingSession> sessions = Arrays.asList(
