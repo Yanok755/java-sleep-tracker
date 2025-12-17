@@ -98,32 +98,31 @@ public class SleepTrackerApp {
             LocalDateTime startDate = sessions.get(0).getSleepStart();
             LocalDateTime endDate = sessions.get(sessions.size() - 1).getSleepEnd();
 
-            // Определяем первую ночь для анализа
+            // Определяем первую ночь для анализа (ночь с 00:00 до 06:00 следующего дня)
             LocalDateTime firstNight = startDate.toLocalDate().atStartOfDay();
-            if (startDate.getHour() >= 12) {
-                firstNight = firstNight.plusDays(1);
-            } else {
+            if (startDate.getHour() < 6) {
+                // Если сессия началась до 6 утра, это текущая ночь
                 firstNight = firstNight.minusDays(1);
             }
 
             // Определяем последнюю ночь для анализа
             LocalDateTime lastNight = endDate.toLocalDate().atStartOfDay();
-            if (endDate.getHour() >= 12) {
+            if (endDate.getHour() >= 6) {
+                // Если сессия закончилась после 6 утра, это следующая ночь
                 lastNight = lastNight.plusDays(1);
             }
 
             // Считаем количество ночей в периоде
-            long totalNights = Period.between(firstNight.toLocalDate(), lastNight.toLocalDate()).getDays();
+            long totalNights = Math.max(0, java.time.temporal.ChronoUnit.DAYS.between(
+                firstNight.toLocalDate(), lastNight.toLocalDate()));
 
             // Считаем ночи со сном
             long nightsWithSleep = sessions.stream()
                 .filter(this::isNightSleep)
                 .map(session -> {
                     LocalDateTime nightStart = session.getSleepStart().toLocalDate().atStartOfDay();
-                    // Если засыпание после 12, то это следующая ночь
-                    if (session.getSleepStart().getHour() >= 12) {
-                        nightStart = nightStart.plusDays(1);
-                    } else {
+                    // Если засыпание после 00:00 и до 6:00, это предыдущая ночь
+                    if (session.getSleepStart().getHour() < 6) {
                         nightStart = nightStart.minusDays(1);
                     }
                     return nightStart;
@@ -132,7 +131,7 @@ public class SleepTrackerApp {
                 .count();
 
             // Бессонные ночи = общее количество ночей - ночи со сном
-            long sleeplessNights = totalNights - nightsWithSleep;
+            long sleeplessNights = Math.max(0, totalNights - nightsWithSleep);
 
             return new SleepAnalysisResult<>("Количество бессонных ночей", sleeplessNights);
         }
@@ -142,9 +141,7 @@ public class SleepTrackerApp {
             LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
 
             // Проверяем, пересекает ли сессия сна ночной интервал (00:00-06:00)
-            return (sleepStart.isBefore(LocalTime.of(6, 0)) && sleepEnd.isAfter(LocalTime.MIDNIGHT)) ||
-                   (sleepStart.isBefore(LocalTime.MIDNIGHT) && sleepEnd.isAfter(LocalTime.MIDNIGHT)) ||
-                   (sleepStart.isBefore(LocalTime.of(6, 0)) && sleepEnd.isAfter(LocalTime.of(6, 0)));
+            return (sleepStart.isBefore(LocalTime.of(6, 0)) || sleepEnd.isAfter(LocalTime.MIDNIGHT));
         }
     }
 
@@ -161,26 +158,33 @@ public class SleepTrackerApp {
                 return new SleepAnalysisResult<>("Хронотип пользователя", "Недостаточно данных");
             }
 
-            // Считаем количество каждого типа
-            long owlCount = nightSessions.stream()
-                .filter(this::isOwl)
-                .count();
+            // Считаем среднее время засыпания
+            double avgSleepStart = nightSessions.stream()
+                .mapToDouble(session -> session.getSleepStart().getHour() + session.getSleepStart().getMinute() / 60.0)
+                .average()
+                .orElse(0.0);
 
-            long larkCount = nightSessions.stream()
-                .filter(this::isLark)
-                .count();
+            // Считаем среднее время пробуждения
+            double avgSleepEnd = nightSessions.stream()
+                .mapToDouble(session -> {
+                    LocalTime end = session.getSleepEnd().toLocalTime();
+                    // Если пробуждение до 12:00, считаем как есть, иначе считаем как время следующего дня
+                    if (end.getHour() < 12) {
+                        return end.getHour() + end.getMinute() / 60.0;
+                    } else {
+                        return end.getHour() + end.getMinute() / 60.0;
+                    }
+                })
+                .average()
+                .orElse(0.0);
 
-            long pigeonCount = nightSessions.stream()
-                .filter(session -> !isOwl(session) && !isLark(session))
-                .count();
-
-            // Определяем преобладающий тип
+            // Определяем хронотип
             String chronotype;
-            if (owlCount > larkCount && owlCount > pigeonCount) {
+            if (avgSleepStart >= 23.5 || avgSleepEnd >= 9.0) { // Совы: поздно ложатся и поздно встают
                 chronotype = "Сова";
-            } else if (larkCount > owlCount && larkCount > pigeonCount) {
+            } else if (avgSleepStart <= 22.0 && avgSleepEnd <= 7.0) { // Жаворонки: рано ложатся и рано встают
                 chronotype = "Жаворонок";
-            } else {
+            } else { // Голуби: все остальные
                 chronotype = "Голубь";
             }
 
@@ -188,14 +192,23 @@ public class SleepTrackerApp {
         }
 
         private boolean isNightSession(SleepingSession session) {
-            // Игнорируем дневные сессии (короче 4 часов и не пересекающие ночь)
-            return session.getDurationInMinutes() >= 240 ||
-                   (session.getSleepStart().getHour() < 6 || session.getSleepEnd().getHour() > 22);
+            // Ночная сессия - продолжительность >= 4 часов и основная часть сна в ночное время
+            LocalTime sleepStart = session.getSleepStart().toLocalTime();
+            LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
+
+            // Проверяем, пересекает ли сессия ночной период (22:00-08:00)
+            boolean crossesNight = (sleepStart.isBefore(LocalTime.of(8, 0)) && sleepEnd.isAfter(LocalTime.of(22, 0))) ||
+                               (sleepStart.isAfter(LocalTime.of(22, 0)) && sleepEnd.isBefore(LocalTime.of(8, 0))) ||
+                               (sleepStart.isBefore(LocalTime.of(8, 0)) && sleepEnd.isBefore(LocalTime.of(8, 0)) && sleepStart.isBefore(sleepEnd)) ||
+                               (sleepStart.isAfter(LocalTime.of(22, 0)) && sleepEnd.isAfter(LocalTime.of(22, 0)) && sleepStart.isBefore(sleepEnd));
+    
+            return session.getDurationInMinutes() >= 240 && crossesNight;
         }
 
         private boolean isOwl(SleepingSession session) {
             LocalTime sleepStart = session.getSleepStart().toLocalTime();
             LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
+            // Сова: ложится после 23:00 и встает после 9:00
             return sleepStart.isAfter(LocalTime.of(23, 0)) &&
                    sleepEnd.isAfter(LocalTime.of(9, 0));
         }
@@ -203,11 +216,11 @@ public class SleepTrackerApp {
         private boolean isLark(SleepingSession session) {
             LocalTime sleepStart = session.getSleepStart().toLocalTime();
             LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
+            // Жаворонок: ложится до 22:00 и встает до 7:00
             return sleepStart.isBefore(LocalTime.of(22, 0)) &&
                    sleepEnd.isBefore(LocalTime.of(7, 0));
         }
     }
-
     // Метод для чтения файла с логом сна
     private List<SleepingSession> readSleepLog(String filePath) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
