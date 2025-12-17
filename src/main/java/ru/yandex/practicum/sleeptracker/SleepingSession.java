@@ -9,7 +9,7 @@ enum SleepQuality {
 }
 
 // Класс для представления сессии сна
-class SleepingSession {
+public class SleepingSession {
     private LocalDateTime sleepStart;
     private LocalDateTime sleepEnd;
     private SleepQuality quality;
@@ -24,9 +24,17 @@ class SleepingSession {
         return Duration.between(sleepStart, sleepEnd).toMinutes();
     }
     
-    public LocalDateTime getSleepStart() { return sleepStart; }
-    public LocalDateTime getSleepEnd() { return sleepEnd; }
-    public SleepQuality getQuality() { return quality; }
+    public LocalDateTime getSleepStart() {
+        return sleepStart;
+    }
+    
+    public LocalDateTime getSleepEnd() {
+        return sleepEnd;
+    }
+    
+    public SleepQuality getQuality() {
+        return quality;
+    }
     
     @Override
     public String toString() {
@@ -45,8 +53,13 @@ class SleepAnalysisResult<T> {
         this.value = value;
     }
     
-    public String getDescription() { return description; }
-    public T getValue() { return value; }
+    public String getDescription() {
+        return description;
+    }
+    
+    public T getValue() {
+        return value;
+    }
     
     @Override
     public String toString() {
