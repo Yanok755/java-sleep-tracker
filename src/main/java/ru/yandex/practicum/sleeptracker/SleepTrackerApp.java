@@ -9,17 +9,8 @@ import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-// Функциональный интерфейс для анализа сна
-interface SleepAnalysisFunction extends Function<List<SleepingSession>, SleepAnalysisResult<?>> {
-    // Базовый метод по умолчанию для удобства
-    default String getName() {
-        return this.getClass().getSimpleName();
-    }
-}
 
 // Основной класс приложения
 public class SleepTrackerApp {
