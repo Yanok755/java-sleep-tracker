@@ -13,10 +13,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 15),
                               LocalDateTime.of(2025, 10, 2, 8, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 8, 0),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.TotalSessionsFunction function = new SleepTrackerApp.TotalSessionsFunction();
@@ -31,10 +31,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 6, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 3, 14, 30),
                               LocalDateTime.of(2025, 10, 3, 15, 20),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.MinDurationFunction function = new SleepTrackerApp.MinDurationFunction();
@@ -48,10 +48,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 6, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 10, 0),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.MaxDurationFunction function = new SleepTrackerApp.MaxDurationFunction();
@@ -65,10 +65,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 6, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 7, 0),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.AverageDurationFunction function = new SleepTrackerApp.AverageDurationFunction();
@@ -82,13 +82,13 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 15),
                               LocalDateTime.of(2025, 10, 2, 8, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 8, 0),
-                              SleepQuality.NORMAL),
+                              SleepingSession.SleepQuality.NORMAL),
             new SleepingSession(LocalDateTime.of(2025, 10, 3, 23, 30),
                               LocalDateTime.of(2025, 10, 4, 6, 20),
-                              SleepQuality.BAD)
+                              SleepingSession.SleepQuality.BAD)
         );
 
         SleepTrackerApp.BadQualitySessionsFunction function = new SleepTrackerApp.BadQualitySessionsFunction();
@@ -102,16 +102,16 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 15),
                               LocalDateTime.of(2025, 10, 2, 8, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 0),
                               LocalDateTime.of(2025, 10, 3, 8, 0),
-                              SleepQuality.NORMAL),
+                              SleepingSession.SleepQuality.NORMAL),
             new SleepingSession(LocalDateTime.of(2025, 10, 3, 14, 30),
                               LocalDateTime.of(2025, 10, 3, 15, 20),
-                              SleepQuality.NORMAL),
+                              SleepingSession.SleepQuality.NORMAL),
             new SleepingSession(LocalDateTime.of(2025, 10, 4, 23, 30),
                               LocalDateTime.of(2025, 10, 5, 6, 20),
-                              SleepQuality.BAD)
+                              SleepingSession.SleepQuality.BAD)
         );
 
         SleepTrackerApp.SleeplessNightsFunction function = new SleepTrackerApp.SleeplessNightsFunction();
@@ -125,10 +125,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 0, 30),
                               LocalDateTime.of(2025, 10, 1, 8, 0),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 22, 0),
                               LocalDateTime.of(2025, 10, 2, 23, 30),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.SleeplessNightsFunction function = new SleepTrackerApp.SleeplessNightsFunction();
@@ -142,10 +142,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 23, 30),
                               LocalDateTime.of(2025, 10, 2, 9, 30),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 0, 15),
                               LocalDateTime.of(2025, 10, 2, 10, 0),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.ChronotypeFunction function = new SleepTrackerApp.ChronotypeFunction();
@@ -159,10 +159,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 21, 30),
                               LocalDateTime.of(2025, 10, 2, 6, 30),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 20, 45),
                               LocalDateTime.of(2025, 10, 3, 5, 45),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.ChronotypeFunction function = new SleepTrackerApp.ChronotypeFunction();
@@ -176,10 +176,10 @@ class SleepTrackerAppTest {
         List<SleepingSession> sessions = Arrays.asList(
             new SleepingSession(LocalDateTime.of(2025, 10, 1, 22, 30),
                               LocalDateTime.of(2025, 10, 2, 7, 30),
-                              SleepQuality.GOOD),
+                              SleepingSession.SleepQuality.GOOD),
             new SleepingSession(LocalDateTime.of(2025, 10, 2, 23, 30),
                               LocalDateTime.of(2025, 10, 3, 6, 30),
-                              SleepQuality.NORMAL)
+                              SleepingSession.SleepQuality.NORMAL)
         );
 
         SleepTrackerApp.ChronotypeFunction function = new SleepTrackerApp.ChronotypeFunction();
