@@ -5,6 +5,12 @@ import java.time.Duration;
 
 // Класс для представления сессии сна
 public class SleepingSession {
+
+    // Внутренний enum
+    public enum SleepQuality {
+        GOOD, NORMAL, BAD
+    }
+
     private LocalDateTime sleepStart;
     private LocalDateTime sleepEnd;
     private SleepQuality quality;
