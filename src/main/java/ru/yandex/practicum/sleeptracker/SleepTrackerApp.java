@@ -234,7 +234,7 @@ public class SleepTrackerApp {
         try {
             List<SleepingSession> sessions = readSleepLog(filePath);
             System.out.println("Загружено " + sessions.size() + " сессий сна");
-            System.out.println("=" .repeat(50));
+            System.out.println("=".repeat(50));
 
             // Выполняем все аналитические функции
             analysisFunctions.forEach(function -> {
