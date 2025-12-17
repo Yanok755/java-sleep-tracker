@@ -5,7 +5,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -201,7 +200,7 @@ public class SleepTrackerApp {
                                (sleepStart.isAfter(LocalTime.of(22, 0)) && sleepEnd.isBefore(LocalTime.of(8, 0))) ||
                                (sleepStart.isBefore(LocalTime.of(8, 0)) && sleepEnd.isBefore(LocalTime.of(8, 0)) && sleepStart.isBefore(sleepEnd)) ||
                                (sleepStart.isAfter(LocalTime.of(22, 0)) && sleepEnd.isAfter(LocalTime.of(22, 0)) && sleepStart.isBefore(sleepEnd));
-    
+
             return session.getDurationInMinutes() >= 240 && crossesNight;
         }
 
@@ -221,6 +220,7 @@ public class SleepTrackerApp {
                    sleepEnd.isBefore(LocalTime.of(7, 0));
         }
     }
+
     // Метод для чтения файла с логом сна
     private List<SleepingSession> readSleepLog(String filePath) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
