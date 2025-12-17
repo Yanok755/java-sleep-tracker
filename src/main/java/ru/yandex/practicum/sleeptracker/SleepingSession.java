@@ -38,7 +38,7 @@ public class SleepingSession {
 
     @Override
     public String toString() {
-        return String.format("SleepSession[start=%s, end=%s, duration=%d min, quality=%s]", 
+        return String.format("SleepSession[start=%s, end=%s, duration=%d min, quality=%s]",
             sleepStart, sleepEnd, getDurationInMinutes(), quality);
     }
 }
