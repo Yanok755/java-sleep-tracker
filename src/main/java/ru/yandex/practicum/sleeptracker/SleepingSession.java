@@ -3,7 +3,7 @@ package ru.yandex.practicum.sleeptracker;
 import java.time.LocalDateTime;
 import java.time.Duration;
 
-// Главный класс файла
+// Класс для представления сессии сна
 public class SleepingSession {
     private LocalDateTime sleepStart;
     private LocalDateTime sleepEnd;
