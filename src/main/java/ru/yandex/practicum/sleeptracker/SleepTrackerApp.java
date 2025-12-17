@@ -13,42 +13,20 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// Внутренний класс
-class SleepAnalysisResult<T> {
-    private String description;
-    private T value;
-
-    public SleepAnalysisResult(String description, T value) {
-        this.description = description;
-        this.value = value;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public T getValue() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s: %s", description, value.toString());
-    }
-}
-
-// Внутренний интерфейс
+// Функциональный интерфейс для анализа сна
 interface SleepAnalysisFunction extends Function<List<SleepingSession>, SleepAnalysisResult<?>> {
+    // Базовый метод по умолчанию для удобства
     default String getName() {
         return this.getClass().getSimpleName();
     }
 }
 
-// Главный класс файла
+// Основной класс приложения
 public class SleepTrackerApp {
     private List<SleepAnalysisFunction> analysisFunctions;
 
     public SleepTrackerApp() {
+        // Инициализация списка аналитических функций
         this.analysisFunctions = Arrays.asList(
             new TotalSessionsFunction(),
             new MinDurationFunction(),
@@ -60,7 +38,7 @@ public class SleepTrackerApp {
         );
     }
 
-    // Внутренние классы функций
+    // Функция 1: Общее количество сессий сна
     static class TotalSessionsFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<Integer> apply(List<SleepingSession> sessions) {
@@ -69,6 +47,7 @@ public class SleepTrackerApp {
         }
     }
 
+    // Функция 2: Минимальная продолжительность сессии
     static class MinDurationFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<Long> apply(List<SleepingSession> sessions) {
@@ -80,6 +59,7 @@ public class SleepTrackerApp {
         }
     }
 
+    // Функция 3: Максимальная продолжительность сессии
     static class MaxDurationFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<Long> apply(List<SleepingSession> sessions) {
@@ -91,6 +71,7 @@ public class SleepTrackerApp {
         }
     }
 
+    // Функция 4: Средняя продолжительность сессии
     static class AverageDurationFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<Double> apply(List<SleepingSession> sessions) {
@@ -98,11 +79,12 @@ public class SleepTrackerApp {
                 .mapToLong(SleepingSession::getDurationInMinutes)
                 .average()
                 .orElse(0.0);
-            return new SleepAnalysisResult<>("Средняя продолжительность сессии (минут)", 
+            return new SleepAnalysisResult<>("Средняя продолжительность сессии (минут)",
                 Math.round(averageDuration * 100.0) / 100.0);
         }
     }
 
+    // Функция 5: Количество сессий с плохим качеством сна
     static class BadQualitySessionsFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<Long> apply(List<SleepingSession> sessions) {
@@ -113,6 +95,7 @@ public class SleepTrackerApp {
         }
     }
 
+    // Функция 6: Количество бессонных ночей
     static class SleeplessNightsFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<Long> apply(List<SleepingSession> sessions) {
@@ -120,9 +103,11 @@ public class SleepTrackerApp {
                 return new SleepAnalysisResult<>("Количество бессонных ночей", 0L);
             }
 
+            // Получаем дату начала и окончания периода логирования
             LocalDateTime startDate = sessions.get(0).getSleepStart();
             LocalDateTime endDate = sessions.get(sessions.size() - 1).getSleepEnd();
 
+            // Определяем первую ночь для анализа
             LocalDateTime firstNight = startDate.toLocalDate().atStartOfDay();
             if (startDate.getHour() >= 12) {
                 firstNight = firstNight.plusDays(1);
@@ -130,17 +115,21 @@ public class SleepTrackerApp {
                 firstNight = firstNight.minusDays(1);
             }
 
+            // Определяем последнюю ночь для анализа
             LocalDateTime lastNight = endDate.toLocalDate().atStartOfDay();
             if (endDate.getHour() >= 12) {
                 lastNight = lastNight.plusDays(1);
             }
 
+            // Считаем количество ночей в периоде
             long totalNights = Period.between(firstNight.toLocalDate(), lastNight.toLocalDate()).getDays();
 
+            // Считаем ночи со сном
             long nightsWithSleep = sessions.stream()
                 .filter(this::isNightSleep)
                 .map(session -> {
                     LocalDateTime nightStart = session.getSleepStart().toLocalDate().atStartOfDay();
+                    // Если засыпание после 12, то это следующая ночь
                     if (session.getSleepStart().getHour() >= 12) {
                         nightStart = nightStart.plusDays(1);
                     } else {
@@ -151,6 +140,7 @@ public class SleepTrackerApp {
                 .distinct()
                 .count();
 
+            // Бессонные ночи = общее количество ночей - ночи со сном
             long sleeplessNights = totalNights - nightsWithSleep;
 
             return new SleepAnalysisResult<>("Количество бессонных ночей", sleeplessNights);
@@ -160,15 +150,18 @@ public class SleepTrackerApp {
             LocalTime sleepStart = session.getSleepStart().toLocalTime();
             LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
 
+            // Проверяем, пересекает ли сессия сна ночной интервал (00:00-06:00)
             return (sleepStart.isBefore(LocalTime.of(6, 0)) && sleepEnd.isAfter(LocalTime.MIDNIGHT)) ||
                    (sleepStart.isBefore(LocalTime.MIDNIGHT) && sleepEnd.isAfter(LocalTime.MIDNIGHT)) ||
                    (sleepStart.isBefore(LocalTime.of(6, 0)) && sleepEnd.isAfter(LocalTime.of(6, 0)));
         }
     }
 
+    // Функция 7: Определение хронотипа пользователя
     static class ChronotypeFunction implements SleepAnalysisFunction {
         @Override
         public SleepAnalysisResult<String> apply(List<SleepingSession> sessions) {
+            // Фильтруем только ночные сессии сна
             List<SleepingSession> nightSessions = sessions.stream()
                 .filter(this::isNightSession)
                 .collect(Collectors.toList());
@@ -177,6 +170,7 @@ public class SleepTrackerApp {
                 return new SleepAnalysisResult<>("Хронотип пользователя", "Недостаточно данных");
             }
 
+            // Считаем количество каждого типа
             long owlCount = nightSessions.stream()
                 .filter(this::isOwl)
                 .count();
@@ -189,6 +183,7 @@ public class SleepTrackerApp {
                 .filter(session -> !isOwl(session) && !isLark(session))
                 .count();
 
+            // Определяем преобладающий тип
             String chronotype;
             if (owlCount > larkCount && owlCount > pigeonCount) {
                 chronotype = "Сова";
@@ -202,25 +197,27 @@ public class SleepTrackerApp {
         }
 
         private boolean isNightSession(SleepingSession session) {
-            return session.getDurationInMinutes() >= 240 || 
+            // Игнорируем дневные сессии (короче 4 часов и не пересекающие ночь)
+            return session.getDurationInMinutes() >= 240 ||
                    (session.getSleepStart().getHour() < 6 || session.getSleepEnd().getHour() > 22);
         }
 
         private boolean isOwl(SleepingSession session) {
             LocalTime sleepStart = session.getSleepStart().toLocalTime();
             LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
-            return sleepStart.isAfter(LocalTime.of(23, 0)) && 
+            return sleepStart.isAfter(LocalTime.of(23, 0)) &&
                    sleepEnd.isAfter(LocalTime.of(9, 0));
         }
 
         private boolean isLark(SleepingSession session) {
             LocalTime sleepStart = session.getSleepStart().toLocalTime();
             LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
-            return sleepStart.isBefore(LocalTime.of(22, 0)) && 
+            return sleepStart.isBefore(LocalTime.of(22, 0)) &&
                    sleepEnd.isBefore(LocalTime.of(7, 0));
         }
     }
 
+    // Метод для чтения файла с логом сна
     private List<SleepingSession> readSleepLog(String filePath) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
 
@@ -241,12 +238,14 @@ public class SleepTrackerApp {
         }
     }
 
+    // Метод для запуска всех аналитических функций
     public void analyzeSleep(String filePath) {
         try {
             List<SleepingSession> sessions = readSleepLog(filePath);
             System.out.println("Загружено " + sessions.size() + " сессий сна");
             System.out.println("=" .repeat(50));
 
+            // Выполняем все аналитические функции
             analysisFunctions.forEach(function -> {
                 SleepAnalysisResult<?> result = function.apply(sessions);
                 System.out.println(result);
@@ -259,6 +258,7 @@ public class SleepTrackerApp {
         }
     }
 
+    // Основной метод приложения
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Использование: java SleepTrackerApp <путь_к_файлу_лога>");
