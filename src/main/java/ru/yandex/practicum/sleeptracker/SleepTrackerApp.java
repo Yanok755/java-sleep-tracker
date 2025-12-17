@@ -80,7 +80,7 @@ public class SleepTrackerApp {
         @Override
         public SleepAnalysisResult<Long> apply(List<SleepingSession> sessions) {
             long badSessions = sessions.stream()
-                .filter(session -> session.getQuality() == SleepQuality.BAD)
+                .filter(session -> session.getQuality() == SleepingSession.SleepQuality.BAD)
                 .count();
             return new SleepAnalysisResult<>("Количество сессий с плохим качеством сна", badSessions);
         }
@@ -219,7 +219,7 @@ public class SleepTrackerApp {
                     try {
                         LocalDateTime sleepStart = LocalDateTime.parse(parts[0], formatter);
                         LocalDateTime sleepEnd = LocalDateTime.parse(parts[1], formatter);
-                        SleepQuality quality = SleepQuality.valueOf(parts[2]);
+                        SleepingSession.SleepQuality quality = SleepingSession.SleepQuality.valueOf(parts[2]);
                         return new SleepingSession(sleepStart, sleepEnd, quality);
                     } catch (Exception e) {
                         throw new IllegalArgumentException("Ошибка парсинга строки: " + Arrays.toString(parts));
