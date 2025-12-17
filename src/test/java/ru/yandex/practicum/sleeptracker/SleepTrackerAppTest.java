@@ -6,56 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
-// Локальные определения классов для тестирования
-enum SleepQuality {
-    GOOD, NORMAL, BAD
-}
-
-class SleepingSession {
-    private LocalDateTime sleepStart;
-    private LocalDateTime sleepEnd;
-    private SleepQuality quality;
-    
-    public SleepingSession(LocalDateTime sleepStart, LocalDateTime sleepEnd, SleepQuality quality) {
-        this.sleepStart = sleepStart;
-        this.sleepEnd = sleepEnd;
-        this.quality = quality;
-    }
-    
-    public long getDurationInMinutes() {
-        return java.time.Duration.between(sleepStart, sleepEnd).toMinutes();
-    }
-    
-    public LocalDateTime getSleepStart() { return sleepStart; }
-    public LocalDateTime getSleepEnd() { return sleepEnd; }
-    public SleepQuality getQuality() { return quality; }
-    
-    @Override
-    public String toString() {
-        return String.format("SleepSession[start=%s, end=%s, duration=%d min, quality=%s]", 
-            sleepStart, sleepEnd, getDurationInMinutes(), quality);
-    }
-}
-
-class SleepAnalysisResult<T> {
-    private String description;
-    private T value;
-    
-    public SleepAnalysisResult(String description, T value) {
-        this.description = description;
-        this.value = value;
-    }
-    
-    public String getDescription() { return description; }
-    public T getValue() { return value; }
-    
-    @Override
-    public String toString() {
-        return String.format("%s: %s", description, value.toString());
-    }
-}
-
-// Тестовый класс
 class SleepTrackerAppTest {
     
     @Test
