@@ -1,5 +1,6 @@
 package ru.yandex.practicum.sleeptracker;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import static ru.yandex.practicum.sleeptracker.SleepAnalysisConstants.*;
 // Функция 6: Количество бессонных ночей
 public class SleeplessNightsFunction implements SleepAnalysisFunction {
     private static final String ANALYSIS_NAME = "Количество бессонных ночей";
+    private static final long MIN_SLEEP_DURATION_FOR_NIGHT = 60; // Минимум 1 час сна для учета ночи
 
     @Override
     public SleepAnalysisResult<Long> apply(List<SleepingSession> sessions) {
@@ -18,62 +20,98 @@ public class SleeplessNightsFunction implements SleepAnalysisFunction {
             return new SleepAnalysisResult<>(ANALYSIS_NAME, 0L);
         }
 
-        // Получаем дату начала и окончания периода логирования
-        LocalDateTime startDate = sessions.get(0).getSleepStart();
-        LocalDateTime endDate = sessions.get(sessions.size() - 1).getSleepEnd();
+        // Находим минимальную и максимальную даты из всех сессий
+        LocalDateTime minDateTime = sessions.stream()
+            .map(SleepingSession::getSleepStart)
+            .min(LocalDateTime::compareTo)
+            .orElseThrow();
 
-        // Определяем первую ночь для анализа (ночь с 00:00 до 06:00 следующего дня)
-        LocalDateTime firstNightStart = startDate.toLocalDate().atStartOfDay();
-        if (startDate.getHour() < NIGHT_END.getHour()) {
-            // Если сессия началась до 6 утра, это предыдущая ночь
-            firstNightStart = firstNightStart.minusDays(1);
+        LocalDateTime maxDateTime = sessions.stream()
+            .map(SleepingSession::getSleepEnd)
+            .max(LocalDateTime::compareTo)
+            .orElseThrow();
+
+        // Определяем период анализа: от даты начала первой сессии до даты окончания последней
+        LocalDate startDate = minDateTime.toLocalDate();
+        LocalDate endDate = maxDateTime.toLocalDate();
+
+        // Если первая сессия началась после 6 утра, мы пропускаем предыдущую ночь
+        if (minDateTime.toLocalTime().isAfter(NIGHT_END)) {
+            startDate = startDate.plusDays(1);
         }
 
-        // Определяем последнюю ночь для анализа
-        LocalDateTime lastNightStart = endDate.toLocalDate().atStartOfDay();
-        if (endDate.getHour() >= NIGHT_END.getHour()) {
-            // Если сессия закончилась после 6 утра, это текущая ночь
-            // (уже учтена в lastNightStart)
+        // Если последняя сессия закончилась до 6 утра, мы пропускаем текущую ночь
+        if (maxDateTime.toLocalTime().isBefore(NIGHT_END)) {
+            endDate = endDate.minusDays(1);
         }
 
-        // Собираем все ночи со сном
-        Set<LocalDateTime> nightsWithSleep = new HashSet<>();
+        // Если после корректировок endDate стал раньше startDate, значит нет полных ночей
+        if (endDate.isBefore(startDate)) {
+            return new SleepAnalysisResult<>(ANALYSIS_NAME, 0L);
+        }
+
+        // Собираем все ночи, в которые был сон
+        Set<LocalDate> nightsWithSleep = new HashSet<>();
 
         for (SleepingSession session : sessions) {
-            if (isNightSleep(session)) {
-                LocalDateTime nightStart = session.getSleepStart().toLocalDate().atStartOfDay();
-                // Если засыпание после 00:00 и до 6:00, это предыдущая ночь
-                if (session.getSleepStart().getHour() < NIGHT_END.getHour()) {
-                    nightStart = nightStart.minusDays(1);
-                }
-                nightsWithSleep.add(nightStart);
+            // Проверяем, является ли сессия ночной (пересекает ночное время)
+            if (isNightSession(session)) {
+                // Определяем, к какой ночи относится сессия
+                LocalDate nightDate = getNightDate(session);
+                nightsWithSleep.add(nightDate);
             }
         }
 
-        // Считаем общее количество ночей в периоде (включительно)
+        // Считаем общее количество ночей в периоде
         long totalNights = 0;
-        LocalDateTime currentNight = firstNightStart;
+        LocalDate currentDate = startDate;
 
-        while (!currentNight.isAfter(lastNightStart)) {
+        while (!currentDate.isAfter(endDate)) {
             totalNights++;
-            currentNight = currentNight.plusDays(1);
+            currentDate = currentDate.plusDays(1);
         }
 
         // Бессонные ночи = общее количество ночей - ночи со сном
-        long sleeplessNights = Math.max(0, totalNights - nightsWithSleep.size());
+        long sleeplessNights = totalNights - nightsWithSleep.size();
 
-        return new SleepAnalysisResult<>(ANALYSIS_NAME, sleeplessNights);
+        return new SleepAnalysisResult<>(ANALYSIS_NAME, Math.max(0, sleeplessNights));
     }
 
-    private boolean isNightSleep(SleepingSession session) {
+    private boolean isNightSession(SleepingSession session) {
+        // Проверяем, пересекает ли сессия ночное время (00:00-06:00)
         LocalTime sleepStart = session.getSleepStart().toLocalTime();
         LocalTime sleepEnd = session.getSleepEnd().toLocalTime();
 
-        // Проверяем, пересекает ли сессия сна ночной интервал (00:00-06:00)
-        // Или полностью находится в ночное время
-        return (sleepStart.isBefore(NIGHT_END) && sleepEnd.isAfter(MIDNIGHT)) ||
-               (sleepStart.isBefore(NIGHT_END) && sleepEnd.isBefore(sleepStart)) || // переходит через полночь
-               (sleepStart.isAfter(MIDNIGHT) && sleepStart.isBefore(NIGHT_END)) || // начинается между 00:00 и 06:00
-               (sleepEnd.isAfter(MIDNIGHT) && sleepEnd.isBefore(NIGHT_END)); // заканчивается между 00:00 и 06:00
+        // Если продолжительность меньше минимальной, не считаем как ночную сессию
+        if (session.getDurationInMinutes() < MIN_SLEEP_DURATION_FOR_NIGHT) {
+            return false;
+        }
+
+        // Сессия считается ночной, если она:
+        // 1. Пересекает полночь (начало до полуночи, конец после)
+        boolean crossesMidnight = sleepStart.isAfter(sleepEnd);
+
+        // 2. Начинается до 6 утра
+        boolean startsBefore6AM = sleepStart.isBefore(NIGHT_END);
+
+        // 3. Заканчивается после полуночи
+        boolean endsAfterMidnight = sleepEnd.isAfter(MIDNIGHT) || sleepEnd.equals(MIDNIGHT);
+
+        // 4. Или полностью находится в ночном времени
+        boolean entirelyAtNight = sleepStart.isAfter(MIDNIGHT) && sleepStart.isBefore(NIGHT_END) &&
+                                 sleepEnd.isAfter(MIDNIGHT) && sleepEnd.isBefore(NIGHT_END);
+
+        return crossesMidnight || (startsBefore6AM && endsAfterMidnight) || entirelyAtNight;
+    }
+
+    private LocalDate getNightDate(SleepingSession session) {
+        LocalDateTime sleepStart = session.getSleepStart();
+
+        // Если сессия началась до 6 утра, она относится к предыдущей ночи
+        if (sleepStart.toLocalTime().isBefore(NIGHT_END)) {
+            return sleepStart.toLocalDate().minusDays(1);
+        } else {
+            return sleepStart.toLocalDate();
+        }
     }
 }
