@@ -1,28 +1,17 @@
 package ru.yandex.practicum.sleeptracker;
 
 import java.time.LocalDateTime;
-import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
-// Класс для представления сессии сна
 public class SleepingSession {
-
-    // Внутренний enum
-    public enum SleepQuality {
-        GOOD, NORMAL, BAD
-    }
-
-    private LocalDateTime sleepStart;
-    private LocalDateTime sleepEnd;
-    private SleepQuality quality;
+    private final LocalDateTime sleepStart;
+    private final LocalDateTime sleepEnd;
+    private final SleepQuality quality;
 
     public SleepingSession(LocalDateTime sleepStart, LocalDateTime sleepEnd, SleepQuality quality) {
         this.sleepStart = sleepStart;
         this.sleepEnd = sleepEnd;
         this.quality = quality;
-    }
-
-    public long getDurationInMinutes() {
-        return Duration.between(sleepStart, sleepEnd).toMinutes();
     }
 
     public LocalDateTime getSleepStart() {
@@ -37,9 +26,11 @@ public class SleepingSession {
         return quality;
     }
 
-    @Override
-    public String toString() {
-        return String.format("SleepSession[start=%s, end=%s, duration=%d min, quality=%s]",
-            sleepStart, sleepEnd, getDurationInMinutes(), quality);
+    public long getDurationInMinutes() {
+        return ChronoUnit.MINUTES.between(sleepStart, sleepEnd);
+    }
+
+    public enum SleepQuality {
+        GOOD, NORMAL, BAD
     }
 }
