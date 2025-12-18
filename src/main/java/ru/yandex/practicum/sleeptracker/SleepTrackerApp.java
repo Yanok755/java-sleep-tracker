@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 // Основной класс приложения
 public class SleepTrackerApp {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy HH:mm");
-    
+
     private List<SleepAnalysisFunction> analysisFunctions;
 
     public SleepTrackerApp() {
