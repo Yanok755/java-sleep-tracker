@@ -14,7 +14,7 @@ public class AverageDurationFunction implements SleepAnalysisFunction {
             .average()
             .orElse(0.0);
 
-        double roundedAverage = Math.round(averageDuration * Math.pow(10, DECIMAL_PLACES)) 
+        double roundedAverage = Math.round(averageDuration * Math.pow(10, DECIMAL_PLACES))
                               / Math.pow(10, DECIMAL_PLACES);
 
         return new SleepAnalysisResult<>(ANALYSIS_NAME, roundedAverage);
