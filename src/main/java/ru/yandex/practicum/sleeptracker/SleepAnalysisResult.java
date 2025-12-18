@@ -1,25 +1,24 @@
 package ru.yandex.practicum.sleeptracker;
 
-// Класс-обёртка для результата анализа
 public class SleepAnalysisResult<T> {
-    private String description;
-    private T value;
+    private final String analysisName;
+    private final T result;
 
-    public SleepAnalysisResult(String description, T value) {
-        this.description = description;
-        this.value = value;
+    public SleepAnalysisResult(String analysisName, T result) {
+        this.analysisName = analysisName;
+        this.result = result;
     }
 
-    public String getDescription() {
-        return description;
+    public String getAnalysisName() {
+        return analysisName;
     }
 
-    public T getValue() {
-        return value;
+    public T getResult() {
+        return result;
     }
 
     @Override
     public String toString() {
-        return String.format("%s: %s", description, value.toString());
+        return analysisName + ": " + result;
     }
 }
